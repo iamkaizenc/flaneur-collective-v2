@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-charcoal;
+    font-family: "Outfit", system-ui, sans-serif;
+  }
+
+  ::selection {
+    @apply bg-ochre/30;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-cream;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-charcoal/10 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-charcoal/25;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: "Cormorant Garamond", Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: "Outfit", system-ui, sans-serif;
+  }
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in-delay-1 {
+  animation: fade-in 1s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fade-in 1s ease-out 0.4s forwards;
+  opacity: 0;
+}
