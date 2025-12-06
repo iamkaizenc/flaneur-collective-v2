@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import AIChatBot from "@/components/AIChatBot";
 
 // ============================================
 // CONSTANTS
@@ -360,6 +361,8 @@ export default function HomePage() {
           </div>
         </footer>
       </main>
+
+      <AIChatBot />
     </>
   );
 }
