@@ -18,16 +18,6 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ];
 
-const BOT_RESPONSES: { [key: string]: string } = {
-  hello: "Hello! Welcome to Flaneur Collective. We create brand identities, content systems, and creative direction for modern brands. What would you like to know?",
-  hi: "Hi there! I'm here to help you learn about our creative services. What interests you most?",
-  services: "We offer:\n• Brand Systems (naming, identity, visual architecture)\n• Content Engine (photography, film, motion, editorial)\n• AI-Augmented Production\n• Creator & Social Growth\n\nWhich area interests you?",
-  pricing: "We partner with a select number of clients each quarter. For pricing and availability, please reach out via email or WhatsApp. Would you like our contact information?",
-  contact: "You can reach us at:\n• Email: support@estatebali.app\n• WhatsApp: +1 (742) 379-8954\n\nWould you like to start a conversation?",
-  work: "We work with founders, lifestyle brands, and creative teams. Our portfolio includes brand launches, creator campaigns, and AI-driven motion projects. Would you like to see examples?",
-  process: "Our process:\n1. Discover - We listen to your vision\n2. Direct - Concepts and production plans\n3. Deliver - Polished identities and content\n\nReady to get started?",
-  default: "That's interesting! I'd love to help you learn more about Flaneur Collective. You can ask me about our services, process, or how to get in touch. What would you like to know?",
-};
 
 export default function AIChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,56 +41,9 @@ export default function AIChatBot() {
     }
   }, [isOpen]);
 
-  const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase().trim();
-
-    // Check for keywords
-    if (lowerMessage.includes("hello") || lowerMessage.includes("hi")) {
-      return BOT_RESPONSES.hello;
-    }
-    if (
-      lowerMessage.includes("service") ||
-      lowerMessage.includes("what do you do") ||
-      lowerMessage.includes("offer")
-    ) {
-      return BOT_RESPONSES.services;
-    }
-    if (
-      lowerMessage.includes("price") ||
-      lowerMessage.includes("cost") ||
-      lowerMessage.includes("how much")
-    ) {
-      return BOT_RESPONSES.pricing;
-    }
-    if (
-      lowerMessage.includes("contact") ||
-      lowerMessage.includes("email") ||
-      lowerMessage.includes("reach") ||
-      lowerMessage.includes("phone")
-    ) {
-      return BOT_RESPONSES.contact;
-    }
-    if (
-      lowerMessage.includes("work") ||
-      lowerMessage.includes("portfolio") ||
-      lowerMessage.includes("project")
-    ) {
-      return BOT_RESPONSES.work;
-    }
-    if (
-      lowerMessage.includes("process") ||
-      lowerMessage.includes("how") ||
-      lowerMessage.includes("step")
-    ) {
-      return BOT_RESPONSES.process;
-    }
-
-    return BOT_RESPONSES.default;
-  };
-
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -110,20 +53,56 @@ export default function AIChatBot() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputValue.trim();
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate typing delay
-    setTimeout(() => {
+    try {
+      // Build conversation history for context (excluding the initial greeting)
+      const conversationHistory = messages
+        .filter((msg) => msg.id !== "1") // Exclude initial greeting
+        .map((msg) => ({
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.text,
+        }));
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: currentInput,
+          conversationHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const data = await response.json();
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(userMessage.text),
+        text: data.message || "I'm sorry, I couldn't generate a response.",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botResponse]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      // Fallback to simple response on error
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm sorry, I'm having trouble connecting right now. Please try again or contact us directly at support@estatebali.app",
         sender: "bot",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   return (
